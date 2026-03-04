@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <title>Yesan — Arañado</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;1,9..40,300&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --white: #f9f7f3;
+                --black: #111110;
+                --gray: #9a9690;
+                --line: #dddad4;
+                --font: 'ABC Marfa', 'DM Sans', 'Helvetica Neue', sans-serif;
+            }
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+            body {
+                background: var(--white);
+                color: var(--black);
+                font-family: var(--font);
+                font-weight: 300;
+                -webkit-font-smoothing: antialiased;
+                overflow-x: hidden;
+            }
+
+            /* GRAIN */
+            body::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 9000;
+                opacity: 0.022;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+            }
+
+            /* ══════════════════════════════════
+   FIXED ELEMENTS (always visible)
+══════════════════════════════════ */
+
+            /* Top: artist + album — only visible in hero */
+            .fixed-header {
+                position: fixed;
+                top: clamp(28px, 4.5vh, 52px);
+                left: 0;
+                right: 0;
+                text-align: center;
+                z-index: 500;
+                pointer-events: none;
+                opacity: 0;
+                animation: fd 0.8s ease forwards 0.1s;
+            }
+            .fixed-header .artist {
+                font-size: clamp(9px, 1vw, 11px);
+                letter-spacing: 0.5em;
+                text-transform: uppercase;
+                color: var(--gray);
+                margin-bottom: 7px;
+            }
+            .fixed-header .album {
+                font-size: clamp(15px, 2.8vw, 28px);
+                letter-spacing: 0.65em;
+                text-transform: uppercase;
+                color: var(--black);
+                font-weight: 300;
+            }
+
+            /* Fixed arrows — centered vertically on viewport */
+            .arrow {
+                position: fixed;
+                top: 50vh;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 18px;
+                z-index: 500;
+                opacity: 0;
+                animation: fd 0.8s ease forwards 0.7s;
+                transition: opacity 0.2s;
+            }
+            .arrow:hover {
+                opacity: 0.85 !important;
+            }
+            #prev {
+                left: clamp(6px, 2vw, 28px);
+            }
+            #next {
+                right: clamp(6px, 2vw, 28px);
+            }
+            .arrow svg {
+                width: clamp(13px, 1.4vw, 18px);
+                height: clamp(13px, 1.4vw, 18px);
+                display: block;
+            }
+
+            /* Fixed bottom nav */
+            .fixed-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 500;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 13px;
+                padding-bottom: clamp(20px, 3.5vh, 34px);
+                background: linear-gradient(to top, var(--white) 55%, transparent);
+                pointer-events: none;
+                opacity: 0;
+                animation: fd 0.8s ease forwards 0.85s;
+            }
+            .fixed-nav .triangle {
+                opacity: 0.3;
+            }
+            .fixed-nav .triangle svg {
+                display: block;
+            }
+
+            .nav-links {
+                display: flex;
+                align-items: center;
+                gap: clamp(26px, 5vw, 62px);
+                pointer-events: all;
+            }
+
+            .nav-btn {
+                font-family: var(--font);
+                font-size: clamp(9px, 0.9vw, 11px);
+                font-weight: 300;
+                letter-spacing: 0.5em;
+                text-transform: uppercase;
+                color: var(--gray);
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 2px 0;
+                position: relative;
+                transition: color 0.22s;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .nav-btn::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 0;
+                height: 1px;
+                background: var(--black);
+                transition: width 0.32s ease;
+            }
+            .nav-btn:hover {
+                color: var(--black);
+            }
+            .nav-btn:hover::after {
+                width: 100%;
+            }
+            .nav-btn.active {
+                color: var(--black);
+            }
+            .nav-btn.active::after {
+                width: 100%;
+            }
+
+            /* ══════════════════════════════════
+   HERO — first screen, 100vh, fixed content
+══════════════════════════════════ */
+            #hero {
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .slides-wrap {
+                width: min(400px, 66vw);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .slide {
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .slide.active {
+                display: flex;
+                animation: fadeSlide 0.5s ease forwards;
+            }
+            @keyframes fadeSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(5px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .slide svg {
+                width: 100%;
+                height: auto;
+                display: block;
+            }
+            .slide-caption {
+                margin-top: 13px;
+                font-size: clamp(8px, 0.72vw, 10px);
+                letter-spacing: 0.36em;
+                text-transform: uppercase;
+                color: var(--gray);
+                text-align: center;
+            }
+
+            /* ══════════════════════════════════
+   SECTIONS — continuous scroll below hero
+══════════════════════════════════ */
+            .section {
+                padding: clamp(80px, 12vh, 130px) clamp(24px, 10vw, 140px);
+                padding-bottom: clamp(80px, 12vh, 130px);
+                max-width: 900px;
+                margin: 0 auto;
+                /* offset for sticky nav */
+            }
+
+            .section-header {
+                margin-bottom: clamp(60px, 9vh, 100px);
+                opacity: 0;
+                transform: translateY(16px);
+                transition:
+                    opacity 0.7s ease,
+                    transform 0.7s ease;
+            }
+            .section-header.on {
+                opacity: 1;
+                transform: none;
+            }
+
+            .section-index {
+                font-size: 9px;
+                letter-spacing: 0.45em;
+                text-transform: uppercase;
+                color: var(--gray);
+                margin-bottom: 10px;
+            }
+            .section-title {
+                font-size: clamp(32px, 6vw, 72px);
+                font-weight: 300;
+                letter-spacing: 0.45em;
+                text-transform: uppercase;
+                color: var(--black);
+                line-height: 1;
+            }
+            .section-sub {
+                margin-top: 18px;
+                font-size: clamp(13px, 1.5vw, 16px);
+                line-height: 1.85;
+                color: var(--gray);
+                max-width: 440px;
+                letter-spacing: 0.01em;
+            }
+
+            /* Content blocks */
+            .block {
+                margin-bottom: clamp(60px, 9vh, 100px);
+                opacity: 0;
+                transform: translateY(16px);
+                transition:
+                    opacity 0.65s ease,
+                    transform 0.65s ease;
+            }
+            .block.on {
+                opacity: 1;
+                transform: none;
+            }
+
+            .label {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 9px;
+                letter-spacing: 0.5em;
+                text-transform: uppercase;
+                color: var(--gray);
+                margin-bottom: 18px;
+            }
+            .label::after {
+                content: '';
+                width: 36px;
+                height: 1px;
+                background: var(--line);
+                flex-shrink: 0;
+            }
+
+            .body-text {
+                font-size: clamp(14px, 1.55vw, 17px);
+                line-height: 1.95;
+                font-weight: 300;
+                color: var(--black);
+                max-width: 500px;
+                letter-spacing: 0.015em;
+            }
+            .body-text em {
+                color: var(--gray);
+                font-style: italic;
+            }
+
+            /* Video */
+            .video-frame {
+                width: 100%;
+                max-width: 680px;
+            }
+            .video-frame iframe {
+                width: 100%;
+                aspect-ratio: 16/9;
+                border: none;
+                display: block;
+            }
+
+            .video-ph {
+                width: 100%;
+                max-width: 680px;
+                aspect-ratio: 16/9;
+                background: var(--black);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                position: relative;
+                overflow: hidden;
+            }
+            .video-ph::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                );
+            }
+            .play-ring {
+                width: 42px;
+                height: 42px;
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .play-ring svg {
+                width: 13px;
+                height: 13px;
+                fill: rgba(255, 255, 255, 0.42);
+                margin-left: 2px;
+            }
+            .ph-label {
+                font-size: 9px;
+                letter-spacing: 0.4em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.2);
+            }
+
+            /* Pills */
+            .pills {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .pill {
+                border: 1px solid var(--line);
+                padding: 7px 16px;
+                font-size: 9px;
+                letter-spacing: 0.38em;
+                text-transform: uppercase;
+                color: var(--gray);
+                font-family: var(--font);
+                font-weight: 300;
+                transition:
+                    border-color 0.2s,
+                    color 0.2s;
+            }
+            .pill:hover {
+                border-color: var(--black);
+                color: var(--black);
+            }
+
+            /* Listen */
+            .listen {
+                background: var(--black);
+                padding: clamp(26px, 4vw, 52px);
+                max-width: 680px;
+            }
+            .listen-title {
+                font-size: clamp(16px, 2.5vw, 24px);
+                font-weight: 300;
+                letter-spacing: 0.3em;
+                text-transform: uppercase;
+                color: rgba(249, 247, 243, 0.78);
+                margin-bottom: 6px;
+            }
+            .listen-sub {
+                font-size: 9px;
+                letter-spacing: 0.35em;
+                text-transform: uppercase;
+                color: rgba(249, 247, 243, 0.2);
+                margin-bottom: 22px;
+            }
+            .platforms {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 18px;
+            }
+            .plat {
+                font-family: var(--font);
+                font-size: 9px;
+                letter-spacing: 0.38em;
+                text-transform: uppercase;
+                color: rgba(249, 247, 243, 0.26);
+                background: none;
+                border: none;
+                border-bottom: 1px solid rgba(249, 247, 243, 0.08);
+                padding-bottom: 1px;
+                cursor: pointer;
+                transition:
+                    color 0.2s,
+                    border-color 0.2s;
+            }
+            .plat:hover {
+                color: rgba(249, 247, 243, 0.72);
+                border-color: rgba(249, 247, 243, 0.32);
+            }
+
+            /* Date list */
+            .date-list {
+                max-width: 500px;
+            }
+            .date-row {
+                display: grid;
+                grid-template-columns: 36px 1fr auto;
+                align-items: center;
+                gap: 22px;
+                padding: 17px 0;
+                border-bottom: 1px solid var(--line);
+                opacity: 0;
+                transform: translateX(-8px);
+                transition:
+                    opacity 0.48s ease,
+                    transform 0.48s ease;
+            }
+            .date-row.on {
+                opacity: 1;
+                transform: none;
+            }
+            .date-n {
+                font-size: 10px;
+                letter-spacing: 0.2em;
+                color: var(--line);
+            }
+            .date-city {
+                font-size: 11px;
+                letter-spacing: 0.3em;
+                text-transform: uppercase;
+                color: var(--black);
+                margin-bottom: 3px;
+            }
+            .date-venue {
+                font-size: 10px;
+                letter-spacing: 0.08em;
+                color: var(--gray);
+                font-style: italic;
+            }
+            .date-yr {
+                font-size: 9px;
+                letter-spacing: 0.3em;
+                color: var(--line);
+            }
+
+            /* Divider */
+            .divider {
+                width: 100%;
+                max-width: 500px;
+                height: 1px;
+                background: var(--line);
+                margin: clamp(40px, 6vh, 70px) 0;
+            }
+
+            /* Section separator */
+            .section-sep {
+                width: 1px;
+                height: clamp(40px, 6vh, 70px);
+                background: var(--line);
+                margin: 0 auto;
+                opacity: 0.5;
+            }
+
+            /* Anim */
+            @keyframes fd {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Mobile */
+            @media (max-width: 480px) {
+                .slides-wrap {
+                    width: min(300px, 80vw);
+                }
+                .section {
+                    padding: 70px 22px 70px;
+                }
+                .date-row {
+                    grid-template-columns: 30px 1fr;
+                }
+                .date-yr {
+                    display: none;
+                }
+                #prev {
+                    left: 4px;
+                }
+                #next {
+                    right: 4px;
+                }
+                .fixed-nav {
+                    gap: 10px;
+                }
+                .nav-links {
+                    gap: 22px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ══════════════════════════════
+     FIXED: header
+══════════════════════════════ -->
+        <div class="fixed-header">
+            <div class="artist">Yesan</div>
+            <div class="album">Arañado</div>
+        </div>
+
+        <!-- ══════════════════════════════
+     FIXED: arrows
+══════════════════════════════ -->
+        <button class="arrow" id="prev" aria-label="Anterior">
+            <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 1L1 10l9 9 9-9-9-9z" stroke="#111110" stroke-width="0.75" fill="none" opacity="0.32" />
+                <path
+                    d="M12 7L8 10l4 3"
+                    stroke="#111110"
+                    stroke-width="1.1"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    opacity="0.62"
+                />
+            </svg>
+        </button>
+
+        <button class="arrow" id="next" aria-label="Siguiente">
+            <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 1L1 10l9 9 9-9-9-9z" stroke="#111110" stroke-width="0.75" fill="none" opacity="0.32" />
+                <path
+                    d="M8 7l4 3-4 3"
+                    stroke="#111110"
+                    stroke-width="1.1"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    opacity="0.62"
+                />
+            </svg>
+        </button>
+
+        <!-- ══════════════════════════════
+     FIXED: bottom nav
+══════════════════════════════ -->
+        <nav class="fixed-nav">
+            <div class="triangle">
+                <svg width="11" height="9" viewBox="0 0 11 9">
+                    <polygon points="5.5,0 11,9 0,9" fill="none" stroke="#9A9690" stroke-width="0.85" />
+                </svg>
+            </div>
+            <div class="nav-links">
+                <a class="nav-btn" href="#carne">Carne</a>
+                <a class="nav-btn" href="#hueso">Hueso</a>
+                <a class="nav-btn" href="#metal">Metal</a>
+            </div>
+        </nav>
+
+        <!-- ══════════════════════════════
+     HERO — 100vh slideshow
+══════════════════════════════ -->
+        <section id="hero">
+            <div class="slides-wrap">
+                <!-- Slide 1: Cachi sign -->
+                <div class="slide active">
+                    <svg viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="s1sky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#c8b898" />
+                                <stop offset="55%" stop-color="#d8c8a0" />
+                                <stop offset="100%" stop-color="#7a6a48" />
+                            </linearGradient>
+                            <linearGradient id="s1gnd" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#6a5a38" />
+                                <stop offset="100%" stop-color="#3a2a18" />
+                            </linearGradient>
+                            <filter id="g1">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.85"
+                                    numOctaves="4"
+                                    stitchTiles="stitch"
+                                />
+                                <feColorMatrix type="saturate" values="0" />
+                                <feBlend in="SourceGraphic" mode="multiply" />
+                                <feComposite in2="SourceGraphic" operator="in" />
+                            </filter>
+                            <radialGradient id="v1" cx="50%" cy="50%" r="65%">
+                                <stop offset="0%" stop-color="transparent" />
+                                <stop offset="100%" stop-color="rgba(0,0,0,0.42)" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="400" height="520" fill="url(#s1sky)" />
+                        <polygon
+                            points="0,300 70,190 150,240 240,150 320,210 400,170 400,320 0,320"
+                            fill="#5a4a2a"
+                            opacity="0.65"
+                        />
+                        <polygon
+                            points="0,320 90,250 170,280 260,220 340,255 400,230 400,340 0,340"
+                            fill="#4a3a20"
+                            opacity="0.75"
+                        />
+                        <rect x="0" y="320" width="400" height="200" fill="url(#s1gnd)" />
+                        <polygon points="162,520 238,520 228,340 172,340" fill="#2a2010" opacity="0.38" />
+                        <rect x="38" y="258" width="7" height="72" fill="#2a2010" opacity="0.82" />
+                        <ellipse cx="41" cy="250" rx="18" ry="26" fill="#1a1408" opacity="0.78" />
+                        <rect x="78" y="272" width="5" height="56" fill="#2a2010" opacity="0.78" />
+                        <ellipse cx="80" cy="267" rx="12" ry="18" fill="#1a1408" opacity="0.72" />
+                        <rect x="330" y="250" width="7" height="80" fill="#2a2010" opacity="0.82" />
+                        <ellipse cx="333" cy="242" rx="20" ry="27" fill="#1a1408" opacity="0.78" />
+                        <rect x="290" y="264" width="5" height="66" fill="#2a2010" opacity="0.78" />
+                        <ellipse cx="292" cy="258" rx="14" ry="20" fill="#1a1408" opacity="0.72" />
+                        <rect x="188" y="72" width="10" height="252" fill="#d8c8a0" />
+                        <rect x="198" y="72" width="9" height="252" fill="#b8a878" />
+                        <rect x="100" y="64" width="220" height="12" fill="#d8c8a0" />
+                        <rect x="100" y="72" width="220" height="5" fill="#b8a878" />
+                        <circle cx="192" cy="57" r="15" fill="none" stroke="#c8b880" stroke-width="2" />
+                        <circle cx="192" cy="57" r="8" fill="#c8b880" opacity="0.52" />
+                        <line x1="192" y1="38" x2="192" y2="46" stroke="#c8b880" stroke-width="1.5" />
+                        <line x1="192" y1="68" x2="192" y2="76" stroke="#c8b880" stroke-width="1.5" />
+                        <line x1="173" y1="57" x2="181" y2="57" stroke="#c8b880" stroke-width="1.5" />
+                        <line x1="203" y1="57" x2="211" y2="57" stroke="#c8b880" stroke-width="1.5" />
+                        <circle
+                            cx="126"
+                            cy="70"
+                            r="17"
+                            fill="#2a2210"
+                            stroke="#b8a870"
+                            stroke-width="1.5"
+                            opacity="0.9"
+                        />
+                        <circle
+                            cx="158"
+                            cy="70"
+                            r="13"
+                            fill="#2a2210"
+                            stroke="#b8a870"
+                            stroke-width="1"
+                            opacity="0.9"
+                        />
+                        <polygon
+                            points="170,61 181,79 159,79"
+                            fill="none"
+                            stroke="#a02020"
+                            stroke-width="1.5"
+                            opacity="0.58"
+                        />
+                        <rect x="202" y="57" width="106" height="42" fill="#e8d880" stroke="#a89858" stroke-width="1" />
+                        <path
+                            d="M206,62 L213,80 M216,58 L210,82 M224,61 L222,78"
+                            stroke="#7a6838"
+                            stroke-width="0.8"
+                            opacity="0.42"
+                        />
+                        <text
+                            x="255"
+                            y="74"
+                            text-anchor="middle"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="9"
+                            fill="#1a1000"
+                            letter-spacing="2"
+                        >
+                            CACHI
+                        </text>
+                        <text
+                            x="255"
+                            y="88"
+                            text-anchor="middle"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="7"
+                            fill="#1a1000"
+                            letter-spacing="1.5"
+                        >
+                            HOSTERÍA
+                        </text>
+                        <circle cx="334" cy="70" r="15" fill="#d8c8a0" stroke="#b8a878" stroke-width="1.5" />
+                        <rect width="400" height="520" fill="#c8a860" opacity="0.05" filter="url(#g1)" />
+                        <rect width="400" height="520" fill="url(#v1)" />
+                    </svg>
+                    <div class="slide-caption">Hostería Cachi — Salta</div>
+                </div>
+
+                <!-- Slide 2: Child at wheel -->
+                <div class="slide">
+                    <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="s2bg" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#d4c4a0" />
+                                <stop offset="100%" stop-color="#8a7a5a" />
+                            </linearGradient>
+                            <linearGradient id="s2dash" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2a2010" />
+                                <stop offset="100%" stop-color="#0e0a04" />
+                            </linearGradient>
+                            <filter id="g2">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.82"
+                                    numOctaves="3"
+                                    stitchTiles="stitch"
+                                />
+                                <feColorMatrix type="saturate" values="0" />
+                                <feBlend in="SourceGraphic" mode="multiply" />
+                                <feComposite in2="SourceGraphic" operator="in" />
+                            </filter>
+                            <radialGradient id="v2" cx="40%" cy="50%" r="65%">
+                                <stop offset="0%" stop-color="transparent" />
+                                <stop offset="100%" stop-color="rgba(0,0,0,0.38)" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="400" height="340" fill="url(#s2bg)" />
+                        <rect x="188" y="8" width="204" height="172" rx="3" fill="#c0d0e0" opacity="0.58" />
+                        <rect x="183" y="6" width="7" height="178" fill="#0e0a04" opacity="0.9" />
+                        <rect x="0" y="248" width="400" height="92" fill="url(#s2dash)" />
+                        <circle cx="220" cy="234" r="72" fill="none" stroke="#0e0a04" stroke-width="14" />
+                        <circle cx="220" cy="234" r="56" fill="none" stroke="#1a1408" stroke-width="1.5" />
+                        <line x1="220" y1="162" x2="220" y2="306" stroke="#0e0a04" stroke-width="8" />
+                        <line x1="148" y1="234" x2="292" y2="234" stroke="#0e0a04" stroke-width="8" />
+                        <circle cx="220" cy="234" r="13" fill="#1a1408" />
+                        <circle cx="56" cy="268" r="25" fill="none" stroke="#2a2010" stroke-width="1.8" />
+                        <circle cx="56" cy="268" r="18" fill="#0e0a04" />
+                        <line x1="56" y1="268" x2="68" y2="255" stroke="#c8b880" stroke-width="1.3" />
+                        <circle cx="110" cy="260" r="16" fill="none" stroke="#2a2010" stroke-width="1.5" />
+                        <circle cx="110" cy="260" r="11" fill="#0e0a04" />
+                        <rect x="320" y="256" width="64" height="16" rx="8" fill="#1a1408" />
+                        <line x1="328" y1="264" x2="376" y2="264" stroke="#2a2010" stroke-width="1.3" />
+                        <line x1="336" y1="259" x2="336" y2="269" stroke="#2a2010" stroke-width="0.9" />
+                        <line x1="348" y1="259" x2="348" y2="269" stroke="#2a2010" stroke-width="0.9" />
+                        <line x1="360" y1="259" x2="360" y2="269" stroke="#2a2010" stroke-width="0.9" />
+                        <rect x="76" y="160" width="56" height="90" rx="7" fill="#203888" opacity="0.85" />
+                        <rect x="84" y="164" width="40" height="56" rx="4" fill="#b82828" opacity="0.85" />
+                        <circle cx="104" cy="178" r="4" fill="#e8c018" opacity="0.9" />
+                        <circle cx="104" cy="192" r="4" fill="#e8c018" opacity="0.9" />
+                        <circle cx="104" cy="206" r="4" fill="#e8c018" opacity="0.9" />
+                        <ellipse cx="104" cy="148" rx="24" ry="26" fill="#c09050" />
+                        <path d="M80,140 Q88,118 104,120 Q120,118 128,140" fill="#0e0804" opacity="0.9" />
+                        <path d="M80,138 Q76,126 82,120 Q88,114 96,118" fill="#0e0804" />
+                        <path d="M128,138 Q132,126 126,120 Q120,114 112,118" fill="#0e0804" />
+                        <path
+                            d="M96,156 Q104,164 112,156"
+                            fill="none"
+                            stroke="#0e0804"
+                            stroke-width="1.4"
+                            stroke-linecap="round"
+                        />
+                        <ellipse cx="98" cy="148" rx="3" ry="3.5" fill="#0e0804" />
+                        <ellipse cx="110" cy="148" rx="3" ry="3.5" fill="#0e0804" />
+                        <ellipse cx="156" cy="216" rx="12" ry="9" fill="#c09050" opacity="0.9" />
+                        <ellipse cx="286" cy="216" rx="12" ry="9" fill="#c09050" opacity="0.9" />
+                        <path
+                            d="M80,178 Q118,195 156,216"
+                            stroke="#b82828"
+                            stroke-width="11"
+                            fill="none"
+                            stroke-linecap="round"
+                        />
+                        <path
+                            d="M130,176 Q208,194 286,216"
+                            stroke="#b82828"
+                            stroke-width="11"
+                            fill="none"
+                            stroke-linecap="round"
+                        />
+                        <rect width="400" height="340" fill="#c8a060" opacity="0.04" filter="url(#g2)" />
+                        <rect width="400" height="340" fill="url(#v2)" />
+                    </svg>
+                    <div class="slide-caption">El Mercedes — mismo auto, mismo niño</div>
+                </div>
+
+                <!-- Slide 3: Route map -->
+                <div class="slide">
+                    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="s3bg" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#ece6d8" />
+                                <stop offset="100%" stop-color="#d8d0be" />
+                            </linearGradient>
+                            <filter id="g3">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.7"
+                                    numOctaves="4"
+                                    stitchTiles="stitch"
+                                />
+                                <feColorMatrix type="saturate" values="0" />
+                                <feBlend in="SourceGraphic" mode="multiply" />
+                                <feComposite in2="SourceGraphic" operator="in" />
+                            </filter>
+                            <radialGradient id="v3" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="transparent" />
+                                <stop offset="100%" stop-color="rgba(0,0,0,0.26)" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="400" height="400" fill="url(#s3bg)" />
+                        <g fill="none" stroke="#b8a880" stroke-width="0.55" opacity="0.36">
+                            <path d="M0,75 Q100,55 200,80 Q300,105 400,60" />
+                            <path d="M0,96 Q110,78 200,102 Q290,124 400,80" />
+                            <path d="M0,120 Q120,100 200,126 Q280,150 400,104" />
+                            <path d="M0,56 Q95,38 200,61 Q315,86 400,44" />
+                            <path d="M0,148 Q130,126 200,153 Q268,180 400,136" />
+                            <path d="M0,172 Q140,150 200,176 Q256,202 400,162" />
+                            <path d="M0,198 Q150,175 200,202 Q248,228 400,192" />
+                        </g>
+                        <path
+                            d="M55,348 Q85,318 108,286 Q138,244 168,219 Q198,194 218,168 Q246,136 266,116 Q298,89 338,82 Q366,78 382,83"
+                            fill="none"
+                            stroke="#1a1408"
+                            stroke-width="1.35"
+                            opacity="0.52"
+                        />
+                        <path
+                            d="M246,134 Q256,126 266,116"
+                            fill="none"
+                            stroke="#8a1818"
+                            stroke-width="2.2"
+                            opacity="0.62"
+                        />
+                        <circle cx="55" cy="348" r="5" fill="#1a1408" opacity="0.78" />
+                        <circle cx="382" cy="83" r="5" fill="#1a1408" opacity="0.78" />
+                        <g transform="translate(256,125)" opacity="0.72">
+                            <line x1="-5.5" y1="-5.5" x2="5.5" y2="5.5" stroke="#8a1818" stroke-width="1.5" />
+                            <line x1="5.5" y1="-5.5" x2="-5.5" y2="5.5" stroke="#8a1818" stroke-width="1.5" />
+                        </g>
+                        <text
+                            x="65"
+                            y="366"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="7.5"
+                            fill="#1a1408"
+                            opacity="0.52"
+                            letter-spacing="1.5"
+                        >
+                            BUENOS AIRES
+                        </text>
+                        <text
+                            x="336"
+                            y="76"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="7.5"
+                            fill="#1a1408"
+                            opacity="0.52"
+                            letter-spacing="1.5"
+                        >
+                            CACHI
+                        </text>
+                        <text
+                            x="270"
+                            y="122"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="6.5"
+                            fill="#8a1818"
+                            opacity="0.62"
+                            letter-spacing="1"
+                        >
+                            el accidente
+                        </text>
+                        <rect width="400" height="400" fill="#b8a870" opacity="0.05" filter="url(#g3)" />
+                        <rect width="400" height="400" fill="url(#v3)" />
+                    </svg>
+                    <div class="slide-caption">Buenos Aires → Cachi — La ruta</div>
+                </div>
+
+                <!-- Slide 4: Album cover -->
+                <div class="slide">
+                    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="s4bg" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#1a1814" />
+                                <stop offset="100%" stop-color="#0a0806" />
+                            </linearGradient>
+                            <filter id="g4">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.78"
+                                    numOctaves="5"
+                                    stitchTiles="stitch"
+                                />
+                                <feColorMatrix type="saturate" values="0" />
+                                <feBlend in="SourceGraphic" mode="multiply" />
+                                <feComposite in2="SourceGraphic" operator="in" />
+                            </filter>
+                            <radialGradient id="v4" cx="50%" cy="50%" r="62%">
+                                <stop offset="0%" stop-color="transparent" />
+                                <stop offset="100%" stop-color="rgba(0,0,0,0.5)" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="400" height="400" fill="url(#s4bg)" />
+                        <g opacity="0.2">
+                            <line x1="42" y1="0" x2="28" y2="400" stroke="#f0e8d8" stroke-width="0.4" />
+                            <line x1="78" y1="0" x2="63" y2="400" stroke="#f0e8d8" stroke-width="0.6" />
+                            <line x1="118" y1="0" x2="103" y2="400" stroke="#f0e8d8" stroke-width="0.3" />
+                            <line x1="154" y1="0" x2="142" y2="400" stroke="#f0e8d8" stroke-width="0.5" />
+                            <line x1="193" y1="0" x2="178" y2="400" stroke="#f0e8d8" stroke-width="0.7" />
+                            <line x1="228" y1="0" x2="216" y2="400" stroke="#f0e8d8" stroke-width="0.3" />
+                            <line x1="264" y1="0" x2="253" y2="400" stroke="#f0e8d8" stroke-width="0.5" />
+                            <line x1="298" y1="0" x2="288" y2="400" stroke="#f0e8d8" stroke-width="0.4" />
+                            <line x1="336" y1="0" x2="323" y2="400" stroke="#f0e8d8" stroke-width="0.6" />
+                            <line x1="370" y1="0" x2="360" y2="400" stroke="#f0e8d8" stroke-width="0.3" />
+                        </g>
+                        <path d="M48,98 L298,378" stroke="#f0e8d8" stroke-width="0.85" opacity="0.16" />
+                        <text
+                            x="200"
+                            y="182"
+                            text-anchor="middle"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="12"
+                            font-weight="300"
+                            fill="#f0e8d8"
+                            opacity="0.36"
+                            letter-spacing="9"
+                        >
+                            YESAN
+                        </text>
+                        <text
+                            x="200"
+                            y="244"
+                            text-anchor="middle"
+                            font-family="'ABC Marfa','DM Sans',sans-serif"
+                            font-size="42"
+                            font-weight="200"
+                            fill="#f0e8d8"
+                            opacity="0.88"
+                            letter-spacing="6"
+                        >
+                            ARAÑADO
+                        </text>
+                        <line x1="58" y1="258" x2="342" y2="258" stroke="#f0e8d8" stroke-width="0.45" opacity="0.14" />
+                        <rect width="400" height="400" fill="#e8d8b0" opacity="0.04" filter="url(#g4)" />
+                        <rect width="400" height="400" fill="url(#v4)" />
+                    </svg>
+                    <div class="slide-caption">Arañado — Yesan, 2025</div>
+                </div>
+
+                <!-- Slide 5: Crash -->
+                <div class="slide">
+                    <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="s5bg" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#e0d8c8" />
+                                <stop offset="100%" stop-color="#c8bea8" />
+                            </linearGradient>
+                            <filter id="g5">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.8"
+                                    numOctaves="4"
+                                    stitchTiles="stitch"
+                                />
+                                <feColorMatrix type="saturate" values="0" />
+                                <feBlend in="SourceGraphic" mode="multiply" />
+                                <feComposite in2="SourceGraphic" operator="in" />
+                            </filter>
+                            <radialGradient id="v5" cx="50%" cy="50%" r="62%">
+                                <stop offset="0%" stop-color="transparent" />
+                                <stop offset="100%" stop-color="rgba(0,0,0,0.36)" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="400" height="340" fill="url(#s5bg)" />
+                        <rect x="0" y="255" width="400" height="85" fill="#2a2010" opacity="0.26" />
+                        <path
+                            d="M55,258 Q75,218 155,208 Q195,204 230,202 Q280,200 330,210 Q370,220 390,242 L395,258 Z"
+                            fill="#1a1408"
+                            opacity="0.76"
+                        />
+                        <path
+                            d="M105,208 Q180,168 240,174 Q300,178 360,208"
+                            stroke="#1a1408"
+                            stroke-width="20"
+                            fill="none"
+                            stroke-linecap="round"
+                            opacity="0.7"
+                        />
+                        <path
+                            d="M118,205 Q200,178 310,195"
+                            fill="none"
+                            stroke="#8a8070"
+                            stroke-width="1.8"
+                            opacity="0.48"
+                        />
+                        <path
+                            d="M190,180 L170,212 M190,180 L210,208 M190,180 L182,205 M190,180 L198,195 L185,218"
+                            stroke="#b0a890"
+                            stroke-width="0.7"
+                            fill="none"
+                            opacity="0.52"
+                        />
+                        <circle cx="128" cy="264" r="33" fill="#0e0804" opacity="0.86" />
+                        <circle cx="128" cy="264" r="21" fill="#1a1408" />
+                        <circle cx="128" cy="264" r="7" fill="#0e0804" />
+                        <circle cx="332" cy="264" r="33" fill="#0e0804" opacity="0.86" />
+                        <circle cx="332" cy="264" r="21" fill="#1a1408" />
+                        <circle cx="332" cy="264" r="7" fill="#0e0804" />
+                        <path d="M242,192 L288,246" stroke="#e0d8c8" stroke-width="1.1" opacity="0.32" />
+                        <rect width="400" height="340" fill="#a89070" opacity="0.05" filter="url(#g5)" />
+                        <rect width="400" height="340" fill="url(#v5)" />
+                    </svg>
+                    <div class="slide-caption">El accidente — Ruta a Cachi, 2024</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════
+     SECTION: CARNE
+══════════════════════════════ -->
+        <div class="section-sep"></div>
+
+        <section id="carne">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-index">I — El origen</div>
+                    <div class="section-title">Carne</div>
+                    <div class="section-sub">
+                        Un viaje hacia Cachi. Un auto que fue del padre. Un choque que lo cambió todo.
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">El documental</div>
+                    <div class="video-frame">
+                        <iframe
+                            src="https://www.youtube.com/embed/LXb3EKWsInQ?controls=1&rel=0&modestbranding=1"
+                            title="Documental"
+                            allowfullscreen
+                            loading="lazy"
+                        ></iframe>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">La historia</div>
+                    <p class="body-text">
+                        De chiquito, Yesan veraneaba con su padre en Cachi. El mismo auto con el que iba —un Mercedes
+                        viejo, de carrocería sólida— lo recuperó, lo restauró, y emprendió el viaje de regreso al
+                        origen.<br /><br />En el camino, el accidente. El auto quedó destrozado. Todos bien.
+                        <em>Solo él, arañado.</em> Una clavícula rota y la certeza de que esa carrocería les salvó la
+                        vida.
+                    </p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="block">
+                    <div class="label">Primer single — videoclip</div>
+                    <div class="video-ph">
+                        <div class="play-ring">
+                            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" /></svg>
+                        </div>
+                        <div class="ph-label">Single — próximamente</div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">Próximas etapas</div>
+                    <div class="pills">
+                        <div class="pill">Fechas de lanzamiento</div>
+                        <div class="pill">Teasers en redes</div>
+                        <div class="pill">Single + Videoclip</div>
+                        <div class="pill">Evento preescucha</div>
+                        <div class="pill">Presentación documental</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════
+     SECTION: HUESO
+══════════════════════════════ -->
+        <div class="section-sep"></div>
+
+        <section id="hueso">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-index">II — El disco</div>
+                    <div class="section-title">Hueso</div>
+                    <div class="section-sub">
+                        El lanzamiento de Arañado. Escuchalo completo. Seguí su camino al mundo.
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="listen">
+                        <div class="listen-title">Escuchar Arañado</div>
+                        <div class="listen-sub">Disponible próximamente en todas las plataformas</div>
+                        <div class="platforms">
+                            <button class="plat">Spotify</button>
+                            <button class="plat">Apple Music</button>
+                            <button class="plat">Bandcamp</button>
+                            <button class="plat">YouTube Music</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">Videoclips</div>
+                    <div class="video-frame">
+                        <iframe
+                            src="https://www.youtube.com/embed/ktvTqknDobU?controls=1&rel=0&modestbranding=1"
+                            title="Videoclip"
+                            allowfullscreen
+                            loading="lazy"
+                        ></iframe>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">Visualizers</div>
+                    <div class="video-ph">
+                        <div class="play-ring">
+                            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" /></svg>
+                        </div>
+                        <div class="ph-label">Visualizer — próximamente</div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="block">
+                    <div class="label">Preescucha — Teatro Colón, Buenos Aires</div>
+                    <p class="body-text">
+                        Una instalación sonora y visual en el escenario más simbólico de la Argentina. El disco en su
+                        estado más puro, antes de que el mundo lo reciba. <em>El Teatro Colón como primer testigo.</em>
+                    </p>
+                </div>
+
+                <div class="block">
+                    <div class="label">Estrategia</div>
+                    <div class="pills">
+                        <div class="pill">Videoclips</div>
+                        <div class="pill">Redes sociales</div>
+                        <div class="pill">Visualizers</div>
+                        <div class="pill">Prensa</div>
+                        <div class="pill">Preescucha</div>
+                        <div class="pill">Plataformas digitales</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════
+     SECTION: METAL
+══════════════════════════════ -->
+        <div class="section-sep"></div>
+
+        <section id="metal">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-index">III — La gira</div>
+                    <div class="section-title">Metal</div>
+                    <div class="section-sub">
+                        La vida del disco más allá del lanzamiento. La gira, la exposición, el mundo.
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="label">Fechas tentativas</div>
+                    <div class="date-list">
+                        <div class="date-row">
+                            <div class="date-n">01</div>
+                            <div>
+                                <div class="date-city">Buenos Aires — Argentina</div>
+                                <div class="date-venue">Lanzamiento oficial del disco</div>
+                            </div>
+                            <div class="date-yr">2025</div>
+                        </div>
+                        <div class="date-row">
+                            <div class="date-n">02</div>
+                            <div>
+                                <div class="date-city">Valencia — España</div>
+                                <div class="date-venue">Casa Axis — Felipe Pantone</div>
+                            </div>
+                            <div class="date-yr">2025</div>
+                        </div>
+                        <div class="date-row">
+                            <div class="date-n">03</div>
+                            <div>
+                                <div class="date-city">Miami — Estados Unidos</div>
+                                <div class="date-venue">Art Basel — Fender</div>
+                            </div>
+                            <div class="date-yr">2025</div>
+                        </div>
+                        <div class="date-row">
+                            <div class="date-n">04</div>
+                            <div>
+                                <div class="date-city">Buenos Aires — Argentina</div>
+                                <div class="date-venue">Cierre de gira</div>
+                            </div>
+                            <div class="date-yr">2026</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="block">
+                    <div class="label">Casa Axis — Valencia</div>
+                    <p class="body-text">
+                        En el espacio del artista Felipe Pantone en Valencia, Arañado toma forma de exposición. Música,
+                        imagen y objeto convergen.
+                        <em>El accidente como obra. La primera parada de un recorrido que atraviesa continentes.</em>
+                    </p>
+                </div>
+
+                <div class="block">
+                    <div class="label">Art Basel Miami — con Fender</div>
+                    <p class="body-text">
+                        La exposición itinerante llega a uno de los eventos de arte contemporáneo más importantes del
+                        mundo. <em>Arañado en el centro del diálogo entre música, arte y cultura.</em>
+                    </p>
+                </div>
+
+                <div class="block">
+                    <div class="label">Exposición itinerante</div>
+                    <div class="pills">
+                        <div class="pill">Casa Axis — Valencia</div>
+                        <div class="pill">Art Basel — Miami</div>
+                        <div class="pill">Cierre — Buenos Aires</div>
+                        <div class="pill">Felipe Pantone</div>
+                        <div class="pill">Fender</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom padding -->
+        <div style="height: 80px"></div>
+
+        <script>
+            // ── SLIDESHOW ──
+            const slides = document.querySelectorAll('#hero .slide')
+            let cur = 0,
+                timer
+            function goTo(n) {
+                slides[cur].classList.remove('active')
+                cur = (n + slides.length) % slides.length
+                slides[cur].classList.add('active')
+            }
+            function tick() {
+                clearInterval(timer)
+                timer = setInterval(() => goTo(cur + 1), 5500)
+            }
+            document.getElementById('prev').addEventListener('click', () => {
+                goTo(cur - 1)
+                tick()
+            })
+            document.getElementById('next').addEventListener('click', () => {
+                goTo(cur + 1)
+                tick()
+            })
+            tick()
+
+            // ── HIDE/SHOW HEADER & ARROWS ON SCROLL ──
+            // Header fades out when leaving hero; arrows only visible in hero zone
+            const fixedHeader = document.querySelector('.fixed-header')
+            const arrows = document.querySelectorAll('.arrow')
+            const heroH = () => document.getElementById('hero').offsetHeight
+
+            function onScroll() {
+                const sy = window.scrollY
+                const h = heroH()
+
+                // Header: fade based on position in hero
+                const hOpacity = Math.max(0, 1 - sy / (h * 0.4))
+                fixedHeader.style.opacity = hOpacity
+
+                // Arrows: visible only in hero
+                const aOpacity = sy < h * 0.7 ? Math.max(0, 1 - sy / (h * 0.5)) : 0
+                arrows.forEach((a) => (a.style.opacity = aOpacity))
+
+                // Active nav highlight
+                updateNav()
+            }
+
+            function updateNav() {
+                const sections = ['carne', 'hueso', 'metal']
+                const offset = window.innerHeight * 0.45
+                let active = null
+                sections.forEach((id) => {
+                    const el = document.getElementById(id)
+                    if (el && el.getBoundingClientRect().top <= offset) active = id
+                })
+                document.querySelectorAll('.nav-btn').forEach((btn) => {
+                    btn.classList.toggle('active', btn.getAttribute('href') === '#' + active)
+                })
+            }
+
+            window.addEventListener('scroll', onScroll, { passive: true })
+            onScroll()
+
+            // ── SCROLL REVEAL ──
+            const io = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((e, i) => {
+                        if (e.isIntersecting) setTimeout(() => e.target.classList.add('on'), i * 80)
+                    })
+                },
+                { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+            )
+
+            document.querySelectorAll('.block, .section-header').forEach((el) => io.observe(el))
+
+            // Date rows with stagger
+            const dateIo = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((e, i) => {
+                        if (e.isIntersecting) setTimeout(() => e.target.classList.add('on'), i * 100)
+                    })
+                },
+                { threshold: 0.1 }
+            )
+            document.querySelectorAll('.date-row').forEach((r) => dateIo.observe(r))
+        </script>
+    </body>
+</html>
