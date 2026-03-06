@@ -18,7 +18,7 @@
         :root {
             --white: #f9f7f3;
             --black: #111110;
-            --gray: #9a9690;
+            --gray: #55524d;
             --line: #dddad4;
             --font: 'ABC Marfa', 'DM Sans', 'Helvetica Neue', sans-serif;
         }
@@ -52,7 +52,6 @@
    FIXED ELEMENTS (always visible)
 ══════════════════════════════════ */
 
-        /* Top: artist + album — only visible in hero */
         .fixed-header {
             position: fixed;
             top: clamp(28px, 4.5vh, 52px);
@@ -257,7 +256,7 @@
         }
 
         .slide-text-main strong {
-            font-weight: 400;
+            font-weight: 500;
             opacity: 1;
         }
 
@@ -269,6 +268,14 @@
             object-fit: cover;
             display: block;
             filter: grayscale(10%) contrast(1.04);
+        }
+
+        .slide-photo.landscape {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            object-position: 25% center;
+            transform: scale(1.25);
         }
 
         .slide-caption {
@@ -345,6 +352,17 @@
             transform: none;
         }
 
+        .block-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .block-center .label {
+            justify-content: center;
+        }
+
         .label {
             display: flex;
             align-items: center;
@@ -411,54 +429,17 @@
         .vinyl-wrap {
             position: relative;
             width: 100%;
-            max-width: 480px;
-            aspect-ratio: 1.2;
+            max-width: 680px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
         }
 
         .vinyl-cover {
-            width: 70%;
-            aspect-ratio: 1;
-            object-fit: cover;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.22);
-        }
-
-        .vinyl-disc {
-            position: absolute;
-            left: 40%;
-            width: 55%;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            background: radial-gradient(circle at 50% 50%,
-                    #1a1a1a 0%,
-                    #282828 18%,
-                    #111 19%,
-                    #2a2a2a 35%,
-                    #111 36%,
-                    #222 52%,
-                    #111 53%,
-                    #1e1e1e 68%,
-                    #111 69%,
-                    #1a1a1a 100%);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
-            z-index: 1;
-        }
-
-        .vinyl-disc::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 13%;
-            height: 13%;
-            border-radius: 50%;
-            background: #d0c9bc;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.07);
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.2));
         }
 
         /* Pills */
@@ -514,7 +495,7 @@
             font-size: 9px;
             letter-spacing: 0.35em;
             text-transform: uppercase;
-            color: rgba(249, 247, 243, 0.2);
+            color: rgba(249, 247, 243, 0.45);
             margin-bottom: 22px;
         }
 
@@ -529,10 +510,10 @@
             font-size: 9px;
             letter-spacing: 0.38em;
             text-transform: uppercase;
-            color: rgba(249, 247, 243, 0.26);
+            color: rgba(249, 247, 243, 0.5);
             background: none;
             border: none;
-            border-bottom: 1px solid rgba(249, 247, 243, 0.08);
+            border-bottom: 1px solid rgba(249, 247, 243, 0.15);
             padding-bottom: 1px;
             cursor: pointer;
             transition:
@@ -572,7 +553,8 @@
         .date-n {
             font-size: 10px;
             letter-spacing: 0.2em;
-            color: var(--line);
+            color: var(--gray);
+            opacity: 0.7;
         }
 
         .date-city {
@@ -593,7 +575,8 @@
         .date-yr {
             font-size: 9px;
             letter-spacing: 0.3em;
-            color: var(--line);
+            color: var(--gray);
+            opacity: 0.7;
         }
 
         /* Divider */
@@ -715,8 +698,7 @@
         <div class="slides-wrap">
             <!-- Slide 1: Yesan de bebé -->
             <div class="slide active">
-                <img class="slide-photo" src="yesan-bebe.jpeg" alt="Yesan de bebé" />
-                <div class="slide-caption">El niño — el origen</div>
+                <img class="slide-photo landscape" src="yesan-bebe.jpeg" alt="Yesan de bebé" />
             </div>
 
             <!-- Slide 2: Texto 2 — viaje/auto -->
@@ -731,7 +713,6 @@
             <!-- Slide 3: Yesan en Cachi -->
             <div class="slide">
                 <img class="slide-photo" src="aca-cachi.jpeg" alt="Yesan en Cachi" />
-                <div class="slide-caption">De regreso al origen — Cachi</div>
             </div>
 
             <!-- Slide 4: Texto 1 — experiencia -->
@@ -754,7 +735,6 @@
     <section id="carne">
         <div class="section">
             <div class="section-header">
-                <div class="section-index">I — El origen</div>
                 <div class="section-title">Carne</div>
                 <div class="section-sub">
                     Un viaje hacia Cachi. Un auto que fue del padre. Un choque que lo cambió todo.
@@ -781,10 +761,7 @@
                 </p>
             </div>
 
-            <div class="block">
-                <div class="label">Teatro Colón — Buenos Aires</div>
-                <img class="section-img" src="colon.png" alt="Teatro Colón" />
-            </div>
+
 
             <div class="divider"></div>
 
@@ -813,36 +790,22 @@
     <section id="hueso">
         <div class="section">
             <div class="section-header">
-                <div class="section-index">II — El disco</div>
                 <div class="section-title">Hueso</div>
                 <div class="section-sub">
                     El lanzamiento de Arañado. Escuchalo completo. Seguí su camino al mundo.
                 </div>
             </div>
 
-            <div class="block">
-                <div class="listen">
-                    <div class="listen-title">Escuchar Arañado</div>
-                    <div class="listen-sub">Disponible próximamente en todas las plataformas</div>
-                    <div class="platforms">
-                        <button class="plat">Spotify</button>
-                        <button class="plat">Apple Music</button>
-                        <button class="plat">Bandcamp</button>
-                        <button class="plat">YouTube Music</button>
-                    </div>
-                </div>
-            </div>
+
 
             <div class="block">
                 <div class="label">Escucha del disco</div>
                 <img class="section-img" src="Arañado player.png" alt="Arañado — Player" />
             </div>
 
-            <div class="block">
-                <div class="label">La portada</div>
+            <div class="block block-center">
                 <div class="vinyl-wrap">
                     <img class="vinyl-cover" src="tapa-disco.png" alt="Arañado — Portada" />
-                    <div class="vinyl-disc"></div>
                 </div>
             </div>
 
@@ -866,6 +829,11 @@
         </div>
     </section>
 
+    <div class="block block-center">
+        <div class="label">Teatro Colón — Buenos Aires</div>
+        <img class="section-img" src="colon.png" alt="Teatro Colón" />
+    </div>
+
     <!-- ══════════════════════════════
      SECTION: METAL
 ══════════════════════════════ -->
@@ -874,7 +842,6 @@
     <section id="metal">
         <div class="section">
             <div class="section-header">
-                <div class="section-index">III — La gira</div>
                 <div class="section-title">Metal</div>
                 <div class="section-sub">
                     La vida del disco más allá del lanzamiento. La gira, la exposición, el mundo.
