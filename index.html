@@ -974,6 +974,7 @@
             arrows.forEach((a) => {
                 a.style.opacity = aOpacity
                 a.style.pointerEvents = aOpacity > 0 ? 'all' : 'none'
+                a.style.visibility = aOpacity <= 0 ? 'hidden' : 'visible'
             })
 
             // Active nav highlight
