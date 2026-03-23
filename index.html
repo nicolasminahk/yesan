@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Yesan — Arañado</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;1,9..40,300&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --white: #f9f7f3;
+            --black: #111110;
+            --gray: #55524d;
+            --line: #dddad4;
+            --font: 'ABC Marfa', 'DM Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            background: var(--white);
+            color: var(--black);
+            font-family: var(--font);
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* GRAIN */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9000;
+            opacity: 0.022;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* ══════════════════════════════════
+   FIXED ELEMENTS (always visible)
+══════════════════════════════════ */
+
+        .fixed-header {
+            position: fixed;
+            top: clamp(28px, 4.5vh, 52px);
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 500;
+            pointer-events: none;
+            opacity: 0;
+            animation: fd 0.8s ease forwards 0.1s;
+        }
+
+        .fixed-header .artist {
+            font-size: clamp(9px, 1vw, 11px);
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 7px;
+        }
+
+        .fixed-header .album {
+            display: block;
+            width: clamp(120px, 18vw, 220px);
+            height: auto;
+            opacity: 0.82;
+            /* using the PNG logo */
+            margin: 0 auto;
+            /* Center the image */
+        }
+
+        /* Fixed arrows — centered vertically on viewport */
+        .arrow {
+            position: fixed;
+            top: 50vh;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px;
+            z-index: 500;
+            opacity: 0;
+            animation: fd 0.8s ease forwards 0.7s;
+            transition: opacity 0.3s;
+        }
+
+        .arrow:hover {
+            opacity: 0.9 !important;
+        }
+
+        #prev {
+            left: clamp(18px, 3vw, 40px);
+        }
+
+        #next {
+            right: clamp(18px, 3vw, 40px);
+        }
+
+        .arrow svg {
+            width: clamp(14px, 1.6vw, 20px);
+            height: clamp(14px, 1.6vw, 20px);
+            display: block;
+        }
+
+        /* Fixed bottom nav */
+        .fixed-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 13px;
+            padding-bottom: clamp(20px, 3.5vh, 34px);
+            padding-top: 40px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.15) 0%, transparent 100%);
+            pointer-events: none;
+            opacity: 0;
+            animation: fd 0.8s ease forwards 0.85s;
+            transition: background 0.5s ease;
+        }
+
+        .fixed-nav.dark-mode {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+        }
+
+        .fixed-nav .triangle {
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+
+        .fixed-nav.dark-mode .triangle polygon {
+            stroke: rgba(249, 247, 243, 0.5);
+        }
+
+        .fixed-nav .triangle svg {
+            display: block;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: clamp(26px, 5vw, 62px);
+            pointer-events: all;
+        }
+
+        .nav-btn {
+            font-family: var(--font);
+            font-size: clamp(9px, 0.9vw, 11px);
+            font-weight: 300;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gray);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 0;
+            position: relative;
+            transition: color 0.32s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--black);
+            transition: width 0.32s ease, background 0.32s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--black);
+        }
+
+        .nav-btn:hover::after {
+            width: 100%;
+        }
+
+        .nav-btn.active {
+            color: var(--black);
+        }
+
+        .nav-btn.active::after {
+            width: 100%;
+        }
+
+        /* Dark mode overrides for fixed-nav */
+        .fixed-nav.dark-mode .nav-btn {
+            color: rgba(249, 247, 243, 0.45);
+        }
+
+        .fixed-nav.dark-mode .nav-btn:hover {
+            color: rgba(249, 247, 243, 0.9);
+        }
+
+        .fixed-nav.dark-mode .nav-btn.active {
+            color: #f9f7f3;
+        }
+
+        .fixed-nav.dark-mode .nav-btn::after {
+            background: #f9f7f3;
+        }
+
+        /* ══════════════════════════════════
+   HERO — first screen, 100vh, fixed content
+══════════════════════════════════ */
+        #hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slides-wrap {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease, transform 1s ease;
+            transform: translateY(8px);
+            background: var(--white);
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            z-index: 2;
+        }
+
+        /* Hero text slide */
+        .slide-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: min(560px, 80vw);
+            padding: 0 20px;
+        }
+
+        .slide-text-main {
+            font-size: clamp(13px, 1.5vw, 17px);
+            font-weight: 300;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: var(--black);
+            line-height: 1.7;
+            opacity: 0.72;
+        }
+
+        .slide-text-main strong {
+            font-weight: 500;
+            opacity: 1;
+        }
+
+        /* Hero slide photo */
+        .slide-photo {
+            width: min(400px, 66vw);
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(10%) contrast(1.04);
+        }
+
+        .slide-photo.landscape {
+            aspect-ratio: 4/3;
+            object-position: 25% center;
+            transform: scale(1.25);
+        }
+
+        .slide-caption {
+            margin-top: 13px;
+            font-size: clamp(8px, 0.72vw, 10px);
+            letter-spacing: 0.36em;
+            text-transform: uppercase;
+            color: var(--gray);
+            text-align: center;
+        }
+
+        /* ══════════════════════════════════
+   SECTION HEROES (Trailer Style)
+══════════════════════════════════ */
+        .section-hero {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 0 40px rgba(0, 0, 0, 0.5));
+        }
+
+        .section-hero-title {
+            position: relative;
+            z-index: 2;
+            font-family: 'Futura', 'Helvetica Neue', 'Impact', sans-serif;
+            font-size: clamp(80px, 15vw, 250px);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--white);
+            letter-spacing: -0.01em;
+            line-height: 1;
+            text-align: center;
+            margin: 0;
+            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ══════════════════════════════════
+   SECTIONS — continuous scroll below hero
+══════════════════════════════════ */
+        #carne {
+            background-color: #601d10;
+            --black: #f9f7f3;
+            --gray: rgba(249, 247, 243, 0.7);
+            --line: rgba(249, 247, 243, 0.2);
+        }
+
+        #hueso {
+            background-color: #E3D9C6;
+            --black: #111110;
+            --gray: #55524d;
+            --line: rgba(17, 17, 16, 0.15);
+        }
+
+        #metal {
+            background-color: #444444;
+            --black: #f9f7f3;
+            --gray: rgba(249, 247, 243, 0.7);
+            --line: rgba(249, 247, 243, 0.2);
+        }
+
+        .section {
+            padding: clamp(80px, 12vh, 130px) clamp(24px, 10vw, 140px);
+            padding-bottom: clamp(80px, 12vh, 130px);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: clamp(60px, 9vh, 100px);
+            opacity: 0;
+            transform: translateY(16px);
+            transition:
+                opacity 0.7s ease,
+                transform 0.7s ease;
+        }
+
+        .section-header.on {
+            opacity: 1;
+            transform: none;
+        }
+
+        .section-index {
+            font-size: 9px;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 6vw, 72px);
+            font-weight: 300;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            color: var(--black);
+            line-height: 1;
+        }
+
+        .section-sub {
+            margin-top: 18px;
+            font-size: clamp(13px, 1.5vw, 16px);
+            line-height: 1.85;
+            color: var(--gray);
+            max-width: 440px;
+            letter-spacing: 0.01em;
+        }
+
+        /* Content blocks */
+        .block {
+            margin-bottom: clamp(60px, 9vh, 100px);
+            opacity: 0;
+            transform: translateY(16px);
+            transition:
+                opacity 0.65s ease,
+                transform 0.65s ease;
+        }
+
+        .block.on {
+            opacity: 1;
+            transform: none;
+        }
+
+        .block-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .block-center .label {
+            justify-content: center;
+        }
+
+        .label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 9px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 18px;
+        }
+
+        .label::after {
+            content: '';
+            width: 36px;
+            height: 1px;
+            background: var(--line);
+            flex-shrink: 0;
+        }
+
+        .body-text {
+            font-size: clamp(14px, 1.55vw, 17px);
+            line-height: 1.95;
+            font-weight: 300;
+            color: var(--black);
+            max-width: 500px;
+            letter-spacing: 0.015em;
+        }
+
+        .body-text em {
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        /* Video */
+        .video-frame {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .video-frame iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+            display: block;
+        }
+
+        /* Section images */
+        .section-img {
+            width: 100%;
+            max-width: 680px;
+            display: block;
+            object-fit: cover;
+            border-radius: 2px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .section-img-square {
+            width: 100%;
+            max-width: 680px;
+            display: block;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            border-radius: 2px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Vinyl montage */
+        .vinyl-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vinyl-cover {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.2));
+        }
+
+        /* Pills */
+        .pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pills-center {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .pill {
+            border: 1px solid var(--line);
+            padding: 7px 16px;
+            font-size: 9px;
+            letter-spacing: 0.38em;
+            text-transform: uppercase;
+            color: var(--gray);
+            font-family: var(--font);
+            font-weight: 300;
+            transition:
+                border-color 0.2s,
+                color 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--black);
+            color: var(--black);
+        }
+
+        /* Listen */
+        .listen {
+            background: var(--black);
+            padding: clamp(26px, 4vw, 52px);
+            max-width: 680px;
+        }
+
+        .listen-title {
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(249, 247, 243, 0.78);
+            margin-bottom: 6px;
+        }
+
+        .listen-sub {
+            font-size: 9px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: rgba(249, 247, 243, 0.45);
+            margin-bottom: 22px;
+        }
+
+        .platforms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .plat {
+            font-family: var(--font);
+            font-size: 9px;
+            letter-spacing: 0.38em;
+            text-transform: uppercase;
+            color: rgba(249, 247, 243, 0.5);
+            background: none;
+            border: none;
+            border-bottom: 1px solid rgba(249, 247, 243, 0.15);
+            padding-bottom: 1px;
+            cursor: pointer;
+            transition:
+                color 0.2s,
+                border-color 0.2s;
+        }
+
+        .plat:hover {
+            color: rgba(249, 247, 243, 0.72);
+            border-color: rgba(249, 247, 243, 0.32);
+        }
+
+        /* Date list */
+        .date-list {
+            max-width: 500px;
+        }
+
+        .date-row {
+            display: grid;
+            grid-template-columns: 36px 1fr auto;
+            align-items: center;
+            gap: 22px;
+            padding: 17px 0;
+            border-bottom: 1px solid var(--line);
+            opacity: 0;
+            transform: translateX(-8px);
+            transition:
+                opacity 0.48s ease,
+                transform 0.48s ease;
+        }
+
+        .date-row.on {
+            opacity: 1;
+            transform: none;
+        }
+
+        .date-n {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        .date-city {
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--black);
+            margin-bottom: 3px;
+        }
+
+        .date-venue {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .date-yr {
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        /* Divider */
+        .divider {
+            width: 100%;
+            max-width: 500px;
+            height: 1px;
+            background: var(--line);
+            margin: clamp(40px, 6vh, 70px) 0;
+        }
+
+        /* Section separator */
+        .section-sep {
+            width: 1px;
+            height: clamp(40px, 6vh, 70px);
+            background: var(--line);
+            margin: 0 auto;
+            opacity: 0.5;
+        }
+
+        /* Anim */
+        @keyframes fd {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            .slides-wrap {
+                width: min(300px, 80vw);
+            }
+
+            .section {
+                padding: 70px 22px 70px;
+            }
+
+            .date-row {
+                grid-template-columns: 30px 1fr;
+            }
+
+            .date-yr {
+                display: none;
+            }
+
+            #prev {
+                left: 4px;
+            }
+
+            #next {
+                right: 4px;
+            }
+
+            .fixed-nav {
+                gap: 10px;
+            }
+
+            .nav-links {
+                gap: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ══════════════════════════════
+     FIXED: header
+══════════════════════════════ -->
+    <div class="fixed-header">
+        <div class="artist">Yesan</div>
+        <img class="album" src="ARAÑADO.png" alt="Arañado" />
+    </div>
+
+    <!-- ══════════════════════════════
+     FIXED: arrows
+══════════════════════════════ -->
+    <button class="arrow" id="prev" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="#9a9690" opacity="0.55" />
+            <path d="M13.5 8.5L9.5 12L13.5 15.5" stroke="#f9f7f3" stroke-width="1.1" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </svg>
+    </button>
+
+    <button class="arrow" id="next" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="#9a9690" opacity="0.55" />
+            <path d="M10.5 8.5L14.5 12L10.5 15.5" stroke="#f9f7f3" stroke-width="1.1" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </svg>
+    </button>
+
+    <!-- ══════════════════════════════
+     FIXED: bottom nav
+══════════════════════════════ -->
+    <nav class="fixed-nav">
+        <div class="triangle">
+            <svg width="11" height="9" viewBox="0 0 11 9">
+                <polygon points="5.5,0 11,9 0,9" fill="none" stroke="#9A9690" stroke-width="0.85" />
+            </svg>
+        </div>
+        <div class="nav-links">
+            <a class="nav-btn" href="#carne">Carne</a>
+            <a class="nav-btn" href="#hueso">Hueso</a>
+            <a class="nav-btn" href="#metal">Metal</a>
+        </div>
+    </nav>
+
+    <!-- ══════════════════════════════
+     HERO — 100vh slideshow
+══════════════════════════════ -->
+    <section id="hero">
+        <div class="slides-wrap">
+            <!-- Slide 1: Yesan de bebé -->
+            <div class="slide active">
+                <img class="slide-photo landscape" src="yesan-bebe.jpeg" alt="Yesan de bebé" />
+            </div>
+
+            <!-- Slide 2: Texto 2 — viaje/auto -->
+            <div class="slide">
+                <div class="slide-text">
+                    <p class="slide-text-main">
+                        Un viaje. Un auto.<br />Un accidente. Un disco.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Slide 3: Yesan en Cachi -->
+            <div class="slide">
+                <img class="slide-photo" src="aca-cachi.jpeg" alt="Yesan en Cachi" />
+            </div>
+
+            <!-- Slide 4: Texto 1 — experiencia -->
+            <div class="slide">
+                <div class="slide-text">
+                    <p class="slide-text-main">
+                        Una experiencia dividida en tres etapas:<br />
+                        <strong>Carne, Hueso y Metal</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════
+     SECTION: CARNE
+══════════════════════════════ -->
+
+    <section id="carne">
+        <img class="section-hero" src="CARNE.jpeg" alt="Carne">
+        <div class="section-sep"></div>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Carne</div>
+                <div class="section-sub">
+                    Un viaje hacia Cachi. Un auto que fue del padre. Un choque que lo cambió todo.
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="label">El documental</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/oB_XxWz3_BY?controls=1&rel=0&modestbranding=1"
+                        title="Documental — Yesan" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="label">La historia</div>
+                <p class="body-text">
+                    De chiquito, Yesan veraneaba con su familia en Cachi. El mismo auto en el cual viajaban
+                    —un Mercedes XXX, de carrocería sólida— dormía en un garage, lo recuperó, lo restauró,
+                    y emprendió el viaje de regreso al origen.<br /><br />
+                    En el auto iban la mamá, el productor, el filmmaker y él. De camino, el accidente. El auto
+                    quedó destrozado. Todos bien. <em>Solo él, arañado.</em> Una clavícula rota y la certeza
+                    de que el disco va a girar en torno a esto.
+                </p>
+            </div>
+
+
+
+            <div class="divider"></div>
+
+            <div class="block">
+                <div class="label">Estrategia</div>
+                <div class="pills-center">
+                    <div class="pill">Fechas de lanzamiento</div>
+                    <div class="pill">Teasers en redes</div>
+                    <div class="pill">Single + Videoclip</div>
+                    <div class="pill">Evento preescucha</div>
+                    <div class="pill">Presentación documental</div>
+                    <div class="pill">Redes sociales</div>
+                    <div class="pill">Visualizers</div>
+                    <div class="pill">Prensa</div>
+                    <div class="pill">Plataformas digitales</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════
+     SECTION: HUESO
+══════════════════════════════ -->
+
+    <section id="hueso">
+        <img class="section-hero" src="HUESO.jpeg" alt="Hueso">
+        <div class="section-sep"></div>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Hueso</div>
+                <div class="section-sub">
+                    El lanzamiento de Arañado. Escuchalo completo. Seguí su camino al mundo.
+                </div>
+            </div>
+
+
+
+            <div class="block">
+                <div class="label">Escucha del disco</div>
+                <img class="section-img" src="Arañado player.png" alt="Arañado — Player" />
+            </div>
+
+            <div class="block block-center">
+                <div class="vinyl-wrap">
+                    <img class="vinyl-cover" src="tapa-disco.png" alt="Arañado — Portada" />
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="label">Videoclips</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/VVrF9CKzv2g?controls=1&rel=0&modestbranding=1"
+                        title="Videoclip — Yesan" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="block">
+                <div class="label">Preescucha — Teatro Colón, Buenos Aires</div>
+                <p class="body-text">
+                    Una instalación sonora y visual en el escenario más simbólico de la Argentina. El disco en su
+                    estado más puro, antes de que el mundo lo reciba. <em>El Teatro Colón como primer testigo.</em>
+                </p>
+            </div>
+
+            <div class="block block-center">
+                <div class="label">Teatro Colón — Buenos Aires</div>
+                <img class="section-img" src="colon.png" alt="Teatro Colón" />
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════
+     SECTION: METAL
+══════════════════════════════ -->
+
+    <section id="metal">
+        <img class="section-hero" src="METAL.jpeg" alt="Metal">
+        <div class="section-sep"></div>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Metal</div>
+                <div class="section-sub">
+                    La vida del disco más allá del lanzamiento. La gira, la exposición, el mundo.
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="label">Fechas tentativas</div>
+                <div class="date-list">
+                    <div class="date-row">
+                        <div class="date-n">01</div>
+                        <div>
+                            <div class="date-city">Buenos Aires — Argentina</div>
+                            <div class="date-venue">Lanzamiento oficial del disco</div>
+                        </div>
+                        <div class="date-yr">2025</div>
+                    </div>
+                    <div class="date-row">
+                        <div class="date-n">02</div>
+                        <div>
+                            <div class="date-city">Valencia — España</div>
+                            <div class="date-venue">Casa Axis — Felipe Pantone</div>
+                        </div>
+                        <div class="date-yr">2025</div>
+                    </div>
+                    <div class="date-row">
+                        <div class="date-n">03</div>
+                        <div>
+                            <div class="date-city">Miami — Estados Unidos</div>
+                            <div class="date-venue">Art Basel — Fender</div>
+                        </div>
+                        <div class="date-yr">2025</div>
+                    </div>
+                    <div class="date-row">
+                        <div class="date-n">04</div>
+                        <div>
+                            <div class="date-city">Buenos Aires — Argentina</div>
+                            <div class="date-venue">Cierre de gira</div>
+                        </div>
+                        <div class="date-yr">2026</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="block">
+                <div class="label">Casa Axis — Valencia</div>
+                <img class="section-img-square" src="AxisOfDivergence_Danysz_x_Felipe_Pantone_x_Casa_AxiS.webp"
+                    alt="Axis Of Divergence — Felipe Pantone" />
+            </div>
+
+            <div class="block">
+                <div class="label">Casa Axis — Valencia</div>
+                <p class="body-text">
+                    En el espacio del artista Felipe Pantone en Valencia, Arañado toma forma de exposición. Música,
+                    imagen y objeto convergen.
+                    <em>El accidente como obra. La primera parada de un recorrido que atraviesa continentes.</em>
+                </p>
+            </div>
+
+            <div class="block">
+                <div class="label">Art Basel Miami — con Fender</div>
+                <p class="body-text">
+                    La exposición itinerante llega a uno de los eventos de arte contemporáneo más importantes del
+                    mundo. <em>Arañado en el centro del diálogo entre música, arte y cultura.</em>
+                </p>
+            </div>
+
+            <div class="block">
+                <div class="label">Exposición itinerante</div>
+                <div class="pills-center">
+                    <div class="pill">Casa Axis — Valencia</div>
+                    <div class="pill">Art Basel — Miami</div>
+                    <div class="pill">Cierre — Buenos Aires</div>
+                    <div class="pill">Felipe Pantone</div>
+                    <div class="pill">Fender</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom padding -->
+        <div style="height: 80px"></div>
+    </section>
+
+    <script>
+        // ── SLIDESHOW ──
+        const slides = document.querySelectorAll('#hero .slide')
+        let cur = 0,
+            timer
+
+        function goTo(n) {
+            slides[cur].classList.remove('active')
+            cur = (n + slides.length) % slides.length
+            slides[cur].classList.add('active')
+        }
+
+        function tick() {
+            clearInterval(timer)
+            timer = setInterval(() => goTo(cur + 1), 5500)
+        }
+
+        document.getElementById('prev').addEventListener('click', () => {
+            goTo(cur - 1)
+            tick()
+        })
+        document.getElementById('next').addEventListener('click', () => {
+            goTo(cur + 1)
+            tick()
+        })
+        tick()
+
+        // ── HIDE/SHOW HEADER & ARROWS ON SCROLL ──
+        const fixedHeader = document.querySelector('.fixed-header')
+        const arrows = document.querySelectorAll('.arrow')
+        const heroH = () => document.getElementById('hero').offsetHeight
+
+        function onScroll() {
+            const sy = window.scrollY
+            const h = heroH()
+
+            // Header: fade out quickly in the first 25% of the hero, then hidden
+            const hOpacity = sy === 0 ? 1 : Math.max(0, 1 - sy / (h * 0.25))
+            fixedHeader.style.opacity = hOpacity
+            // Also make it non-interactive once past the hero
+            fixedHeader.style.visibility = hOpacity <= 0 ? 'hidden' : 'visible'
+
+            // Arrows: fade out in first 40% of hero, completely gone after hero
+            const aOpacity = sy < h ? Math.max(0, 1 - sy / (h * 0.4)) : 0
+            arrows.forEach((a) => {
+                a.style.opacity = aOpacity
+                a.style.pointerEvents = aOpacity > 0 ? 'all' : 'none'
+                a.style.visibility = aOpacity <= 0 ? 'hidden' : 'visible'
+            })
+
+            // Active nav highlight
+            updateNav()
+        }
+
+        function updateNav() {
+            const sections = ['carne', 'hueso', 'metal']
+            const offset = window.innerHeight * 0.45
+            let active = null
+            sections.forEach((id) => {
+                const el = document.getElementById(id)
+                if (el && el.getBoundingClientRect().top <= offset) active = id
+            })
+
+            const fixedNav = document.querySelector('.fixed-nav')
+            if (active === 'carne' || active === 'metal') {
+                fixedNav.classList.add('dark-mode')
+            } else {
+                fixedNav.classList.remove('dark-mode')
+            }
+
+            document.querySelectorAll('.nav-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.getAttribute('href') === '#' + active)
+            })
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true })
+        onScroll()
+
+        // ── SCROLL REVEAL ──
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e, i) => {
+                    if (e.isIntersecting) setTimeout(() => e.target.classList.add('on'), i * 80)
+                })
+            },
+            { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+        )
+
+        document.querySelectorAll('.block, .section-header').forEach((el) => io.observe(el))
+
+        // Date rows with stagger
+        const dateIo = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e, i) => {
+                    if (e.isIntersecting) setTimeout(() => e.target.classList.add('on'), i * 100)
+                })
+            },
+            { threshold: 0.1 }
+        )
+        document.querySelectorAll('.date-row').forEach((r) => dateIo.observe(r))
+    </script>
+</body>
+
+</html>
